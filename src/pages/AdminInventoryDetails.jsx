@@ -21,7 +21,7 @@ const AdminInventoryDetails = () => {
             <div className="image-container">
                 <p><strong>Повне зображення:</strong></p>
                 <img
-                    src={`http://localhost:5000/inventory/${id}/photo`}
+                    src={item.photoUrl || 'https://via.placeholder.com/150'}
                     alt={item.inventory_name}
                     style={{ maxWidth: '100%', borderRadius: '8px' }}
                 />

@@ -1,23 +1,25 @@
 ﻿import { useNavigate } from 'react-router-dom';
 import { inventoryApi } from '../services/inventoryApi';
+import { useInventory } from '../store/InventoryContext';
 import InventoryForm from '../components/inventory/InventoryForm';
 
 const AdminInventoryCreate = () => {
     const navigate = useNavigate();
+    const { setInventory } = useInventory();
 
     const handleCreate = async (formData) => {
         try {
-            await inventoryApi.create(formData);
-            navigate('/admin'); // Повертаємось до списку після успіху
+            const res = await inventoryApi.create(formData);
+            setInventory(prev => [...prev, res.data]);
+            navigate('/admin');
         } catch {
-            alert('Помилка при створенні');
+            alert('Помилка створення');
         }
     };
 
     return (
         <div>
-            <h1>Додати нову позицію</h1>
-            <button onClick={() => navigate('/admin')}>Назад</button>
+            <h1>Нова позиція</h1>
             <InventoryForm onSubmit={handleCreate} />
         </div>
     );

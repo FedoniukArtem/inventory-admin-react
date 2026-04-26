@@ -1,56 +1,58 @@
-﻿import { useNavigate } from 'react-router-dom';
+﻿import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { inventoryApi } from '../../services/inventoryApi';
 import { useInventory } from '../../store/InventoryContext';
+import ConfirmModal from './ConfirmModal';
 
 const InventoryTable = ({ items }) => {
     const navigate = useNavigate();
     const { setInventory } = useInventory();
+    const [modal, setModal] = useState({ open: false, id: null });
 
-    const handleDelete = async (id) => {
-        // Тут в ідеалі має бути ConfirmModal, але для тесту зробимо window.confirm
-        if (window.confirm('Ви впевнені, що хочете видалити цей елемент?')) {
-            try {
-                await inventoryApi.delete(id);
-                // Оновлюємо локальний стан, щоб елемент зник зі списку [cite: 101]
-                setInventory(prev => prev.filter(item => item.id !== id));
-            } catch {
-                alert('Помилка при видаленні');
-            }
+    const handleDelete = async () => {
+        try {
+            await inventoryApi.delete(modal.id);
+            setInventory(prev => prev.filter(item => item.id !== modal.id));
+            setModal({ open: false, id: null });
+        } catch {
+            alert('Помилка видалення');
         }
     };
 
     return (
-        <table border="1" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-                <tr>
-                    <th>Фото</th>
-                    <th>Назва</th>
-                    <th>Опис</th>
-                    <th>Дії</th>
-                </tr>
-            </thead>
-            <tbody>
-                {items.map((item) => (
-                    <tr key={item.id}>
-                        <td>
-                            {/* Відображення прев'ю фото [cite: 57] */}
-                            <img
-                                src={`http://localhost:5000/inventory/${item.id}/photo`}
-                                alt={item.inventory_name}
-                                style={{ width: '50px', height: '50px', objectFit: 'cover' }}
-                            />
-                        </td>
-                        <td>{item.inventory_name}</td>
-                        <td>{item.description}</td>
-                        <td>
-                            <button onClick={() => navigate(`/admin/details/${item.id}`)}>Переглянути</button>
-                            <button onClick={() => navigate(`/admin/edit/${item.id}`)}>Редагувати</button>
-                            <button onClick={() => handleDelete(item.id)} style={{ color: 'red' }}>Видалити</button>
-                        </td>
+        <>
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }} border="1">
+                <thead>
+                    <tr>
+                        <th>Фото</th>
+                        <th>Назва</th>
+                        <th>Дії</th>
                     </tr>
-                ))}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {items.map(item => (
+                        <tr key={item.id}>
+                            <td style={{ textAlign: 'center' }}>
+                                <img src={item.photoUrl || 'https://via.placeholder.com/50'} width="50" alt="" />
+                            </td>
+                            <td>{item.inventory_name}</td>
+                            <td>
+                                <button onClick={() => navigate(`/admin/details/${item.id}`)}>Перегляд</button>
+                                <button onClick={() => navigate(`/admin/edit/${item.id}`)}>Редагувати</button>
+                                <button onClick={() => setModal({ open: true, id: item.id })} style={{ color: 'red' }}>Видалити</button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+
+            <ConfirmModal
+                isOpen={modal.open}
+                onClose={() => setModal({ open: false, id: null })}
+                onConfirm={handleDelete}
+                message="Видалити цей елемент?"
+            />
+        </>
     );
 };
 
