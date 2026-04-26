@@ -13,7 +13,7 @@ const InventoryTable = ({ items }) => {
                 await inventoryApi.delete(id);
                 // Оновлюємо локальний стан, щоб елемент зник зі списку [cite: 101]
                 setInventory(prev => prev.filter(item => item.id !== id));
-            } catch (err) {
+            } catch {
                 alert('Помилка при видаленні');
             }
         }

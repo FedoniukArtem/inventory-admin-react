@@ -9,7 +9,7 @@ const AdminInventoryCreate = () => {
         try {
             await inventoryApi.create(formData);
             navigate('/admin'); // Повертаємось до списку після успіху
-        } catch (err) {
+        } catch {
             alert('Помилка при створенні');
         }
     };

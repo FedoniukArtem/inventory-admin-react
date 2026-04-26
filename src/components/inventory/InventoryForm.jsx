@@ -8,7 +8,7 @@ const InventoryForm = ({ onSubmit, initialData = {}, isEdit = false }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        // Валідація обов'язкових полів
+        // Валідація обов'язкових полів 
         if (!name.trim()) return alert('Назва обов’язкова!');
 
         const formData = new FormData();

@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import { inventoryApi } from '../services/inventoryApi';
 import { useInventory } from '../store/InventoryContext';
-import InventoryTable from '../components/inventory/InventoryTable';
+import InventoryTable from '../components/inventory/InventoryTable.jsx';
 
 const AdminInventory = () => {
     const { inventory, setInventory, loading, setLoading, error, setError } = useInventory();
@@ -14,7 +14,7 @@ const AdminInventory = () => {
                 const response = await inventoryApi.getAll();
                 setInventory(response.data);
                 setError(null);
-            } catch (err) {
+            } catch {
                 setError('Не вдалося завантажити дані');
             } finally {
                 setLoading(false);
