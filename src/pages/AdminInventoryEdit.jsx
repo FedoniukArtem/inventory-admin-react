@@ -1,59 +1,70 @@
 ﻿import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { inventoryApi } from '../services/inventoryApi';
+import { useInventory } from '../store/InventoryContext';
+import InventoryForm from '../components/inventory/InventoryForm';
 
 const AdminInventoryEdit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
-    const [file, setFile] = useState(null);
+    const { setInventory } = useInventory();
+    const [initialData, setInitialData] = useState(null);
 
     useEffect(() => {
-        inventoryApi.getById(id).then(res => {
-            setName(res.data.inventory_name);
-            setDescription(res.data.description);
-        });
+        const fetchItem = async () => {
+            const res = await inventoryApi.getById(id);
+            if (res.data.data) {
+                setInitialData(res.data.data);
+            }
+        };
+        fetchItem();
     }, [id]);
 
-    // Частина 1: Оновлення тексту (JSON) 
-    const handleUpdateText = async (e) => {
-        e.preventDefault();
+    const handleUpdate = async (formData) => {
         try {
-            await inventoryApi.updateText(id, { inventory_name: name, description });
-            alert('Текст оновлено!');
-        } catch (err) { alert('Помилка оновлення тексту'); }
+            // 1. Оновлюємо текст
+            const updatedText = {
+                inventory_name: formData.get('inventory_name'),
+                description: formData.get('description')
+            };
+            await inventoryApi.updateText(id, updatedText);
+
+            // 2. Оновлюємо фото, якщо вибрано новий файл
+            const photoFile = formData.get('photo');
+            let newPhotoUrl = initialData.photoUrl;
+
+            if (photoFile && photoFile.size > 0) {
+                const photoData = new FormData();
+                photoData.append('photo', photoFile);
+                const resPhoto = await inventoryApi.updatePhoto(id, photoData);
+                newPhotoUrl = resPhoto.data.photoUrl;
+            }
+
+            // 3. Оновлюємо глобальний стан
+            setInventory(prev => prev.map(item =>
+                item.id === Number(id)
+                    ? { ...item, ...updatedText, photoUrl: newPhotoUrl }
+                    : item
+            ));
+
+            alert('Дані та фото успішно оновлено!');
+            navigate('/admin');
+        } catch (error) {
+            console.error(error);
+            alert('Помилка при оновленні');
+        }
     };
 
-    // Частина 2: Оновлення фото (Multipart)
-    const handleUpdatePhoto = async () => {
-        if (!file) return alert('Виберіть файл!');
-        const formData = new FormData();
-        formData.append('photo', file);
-        try {
-            await inventoryApi.updatePhoto(id, formData);
-            alert('Фото оновлено!');
-            window.location.reload(); // Перевантажимо, щоб побачити нове фото
-        } catch { alert('Помилка оновлення фото'); }
-    };
+    if (!initialData) return <p>Завантаження...</p>;
 
     return (
         <div>
-            <h1>Редагування</h1>
-            <button onClick={() => navigate('/admin')}>Назад</button>
-
-            <form onSubmit={handleUpdateText} style={{ marginTop: '20px' }}>
-                <h3>Текстові дані</h3>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} />
-                <textarea value={description} onChange={e => setDescription(e.target.value)} />
-                <button type="submit">Оновити текст</button>
-            </form>
-
-            <div style={{ marginTop: '30px', padding: '10px', border: '1px solid #ccc' }}>
-                <h3>Змінити фото</h3>
-                <input type="file" onChange={e => setFile(e.target.files[0])} />
-                <button onClick={handleUpdatePhoto}>Завантажити нове фото</button>
-            </div>
+            <h1>Редагувати позицію</h1>
+            <InventoryForm
+                onSubmit={handleUpdate}
+                initialData={initialData}
+                isEdit={true}
+            />
         </div>
     );
 };

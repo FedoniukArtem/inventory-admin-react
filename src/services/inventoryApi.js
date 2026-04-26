@@ -1,6 +1,5 @@
 ﻿import axios from 'axios';
 
-// Імітація затримки сервера
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const inventoryApi = {
@@ -20,7 +19,7 @@ export const inventoryApi = {
     create: async (formData) => {
         await delay(500);
         const file = formData.get('photo');
-        const imageUrl = file ? URL.createObjectURL(file) : null;
+        const imageUrl = file ? URL.createObjectURL(file) : 'https://via.placeholder.com/150';
 
         const newItem = {
             id: Date.now(),
@@ -41,8 +40,10 @@ export const inventoryApi = {
             item.id === Number(id) ? { ...item, ...updatedData } : item
         );
         localStorage.setItem('mock_inventory', JSON.stringify(updatedItems));
-        return { success: true };
+        const updatedItem = updatedItems.find(i => i.id === Number(id));
+        return { data: updatedItem };
     },
+
 
     updatePhoto: async (id, formData) => {
         await delay(500);
@@ -54,7 +55,8 @@ export const inventoryApi = {
             item.id === Number(id) ? { ...item, photoUrl: imageUrl } : item
         );
         localStorage.setItem('mock_inventory', JSON.stringify(updatedItems));
-        return { success: true };
+
+        return { data: { photoUrl: imageUrl } };
     },
 
     delete: async (id) => {

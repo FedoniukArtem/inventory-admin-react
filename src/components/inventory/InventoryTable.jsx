@@ -26,17 +26,25 @@ const InventoryTable = ({ items }) => {
                     <tr>
                         <th>Фото</th>
                         <th>Назва</th>
+                        <th>Опис</th>
                         <th>Дії</th>
                     </tr>
                 </thead>
                 <tbody>
                     {items.map(item => (
                         <tr key={item.id}>
-                            <td style={{ textAlign: 'center' }}>
-                                <img src={item.photoUrl || 'https://via.placeholder.com/50'} width="50" alt="" />
+                            <td style={{ textAlign: 'center', padding: '10px' }}>
+                                <img
+                                    src={item.photoUrl || 'https://via.placeholder.com/50'}
+                                    width="50"
+                                    height="50"
+                                    style={{ objectFit: 'cover', borderRadius: '4px' }}
+                                    alt={item.inventory_name}
+                                />
                             </td>
-                            <td>{item.inventory_name}</td>
-                            <td>
+                            <td style={{ padding: '10px' }}>{item.inventory_name}</td>
+                            <td style={{ padding: '10px' }}>{item.description}</td>
+                            <td style={{ padding: '10px', textAlign: 'center' }}>
                                 <button onClick={() => navigate(`/admin/details/${item.id}`)}>Перегляд</button>
                                 <button onClick={() => navigate(`/admin/edit/${item.id}`)}>Редагувати</button>
                                 <button onClick={() => setModal({ open: true, id: item.id })} style={{ color: 'red' }}>Видалити</button>
@@ -46,11 +54,15 @@ const InventoryTable = ({ items }) => {
                 </tbody>
             </table>
 
+            {items.length === 0 && (
+                <p style={{ textAlign: 'center', marginTop: '20px' }}>Інвентар порожній</p>
+            )}
+
             <ConfirmModal
                 isOpen={modal.open}
                 onClose={() => setModal({ open: false, id: null })}
                 onConfirm={handleDelete}
-                message="Видалити цей елемент?"
+                message="Ви впевнені, що хочете видалити цей елемент?"
             />
         </>
     );
